@@ -13,7 +13,7 @@ __author__ = "bitbybyte"
 __copyright__ = "Copyright 2019 bitbybyte"
 
 __license__ = "MIT"
-__version__ = "1.0"
+__version__ = "0.1"
 
 BASE_HOST = "iwara.tv"
 
@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     dl_group = cmdl_parser.add_argument_group("download options")
     dl_group.add_argument("-q", "--quality", nargs="?", default="Source", dest="quality", help="video quality to download")
-    dl_group.add_argument("-o", "--output-directory", dest="output_path", help="directory to download to")
+    dl_group.add_argument("-o", "--output-path", dest="output_path", help="custom filename template")
     dl_group.add_argument("-m", "--dump-metadata", action="store_true", dest="dump_metadata", help="store metadata to file")
     dl_group.add_argument("-t", "--save-thumbnail", action="store_true", dest="save_thumbnail", help="save thumbnail")
 
