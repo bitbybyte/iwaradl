@@ -24,6 +24,8 @@ if __name__ == "__main__":
 
     cmdl_parser.add_argument("-q", "--quiet", action="store_true", dest="quiet", help="suppress output")
     cmdl_parser.add_argument("-v", "--version", action="version", version=cmdl_version)
+    cmdl_parser.add_argument("-f", "--file", nargs="?", dest="txt_file", help="text file list")
+
     cmdl_parser.add_argument("url", action="store", nargs="*", help="video URL")
 
     dl_group = cmdl_parser.add_argument_group("download options")
@@ -37,22 +39,46 @@ if __name__ == "__main__":
 
     downloader = models.IwaraDownloader(dump_metadata=cmdl_opts.dump_metadata, save_thumbnail=cmdl_opts.save_thumbnail, filename_template=cmdl_opts.output_path, quiet=cmdl_opts.quiet)
 
-    if cmdl_opts.url:
+    def process_url(url):
+        url_groups = downloader.IWARA_URL_RE.match(url)
+        if url_groups:
+            if url_groups[2] == "videos":
+                downloader.download_video(url_groups[3], quality=cmdl_opts.quality)
+                return True
+            elif url_groups[2] == "images":
+                # downloader.download_image(url_groups[3])
+                print("Not yet implemented")
+                return False
+            elif url_groups[3] == "playlist":
+                # downloader.download_playlist(url_groups[3])
+                print("Not yet implemented")
+                return False
+            elif url_groups[4] == "users":
+                # downloader.download_user(url_groups[3])
+                print("Not yet implemented")
+                return False
+
+    if cmdl_opts.txt_file:
+        if cmdl_opts.url:
+            print("Ignoring URL arguments and processing -f/--file.")
+        with open(cmdl_opts.txt_file, encoding="utf-8") as txt_list:
+            urls = txt_list.readlines()
+            for url in urls:
+                try:
+                    processed = process_url(url)
+                    if not processed:
+                        print("URL is not fully qualified or invalid. Skipping...")
+                except Exception:
+                    print("Encountered an error. Skipping URL...")
+                    continue
+    elif cmdl_opts.url:
         for url in cmdl_opts.url:
-            url_groups = downloader.IWARA_URL_RE.match(url)
-            if url_groups:
-                if url_groups[2] == "videos":
-                    downloader.download_video(url_groups[3], quality=cmdl_opts.quality)
-                elif url_groups[2] == "images":
-                    # downloader.download_image(url_groups[3])
-                    sys.exit("Not yet implemented")
-                elif url_groups[3] == "playlist":
-                    # downloader.download_playlist(url_groups[3])
-                    sys.exit("Not yet implemented")
-                elif url_groups[4] == "users":
-                    # downloader.download_user(url_groups[3])
-                    sys.exit("Not yet implemented")
-            else:
-                print("URL is not fully qualified or invalid. Skipping...")
+            try:
+                processed = process_url(url)
+                if not processed:
+                    print("URL is not fully qualified or invalid. Skipping...")
+            except Exception:
+                print("Encountered an error. Skipping URL...")
+                continue
     else:
         sys.exit("Please provide a fully qualified Iwara URL")
